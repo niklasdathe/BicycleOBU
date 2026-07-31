@@ -1,0 +1,3 @@
+[submodule "sensors/IRBicycleWheelSpeedSensor"]
+	path = sensors/IRBicycleWheelSpeedSensor
+	url = https://github.com/niklasdathe/IRBicycleWheelSpeedSensor.git
