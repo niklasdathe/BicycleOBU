@@ -64,6 +64,12 @@ A list for components that would be cool in the complete system
 
 
 ### Wheel speed sensors
+The implemented optical wheel-speed subsystem is maintained as the
+[`IRBicycleWheelSpeedSensor`](https://github.com/niklasdathe/IRBicycleWheelSpeedSensor)
+submodule. It contains the KiCad hardware, linked Python/ngspice simulation,
+ESP-IDF firmware, verification artifacts, JLCPCB production files, and an
+[interactive BOM](https://niklasdathe.github.io/IRBicycleWheelSpeedSensor/).
+
 #### Mechanical mounting 
 - Mounting should be simple and mountable to different bicycles
 - Hall sensor on fork with magnet on spokes
@@ -75,6 +81,25 @@ A list for components that would be cool in the complete system
 #### Power
 - Either battery based for short term installation or on 5V system power bus for long term installation
 - Probably not feasible but might be worth investigating if power can be harvested from the spinning spoke magnet with a coil
+
+
+## Hardware subprojects
+
+| Path | Purpose |
+| --- | --- |
+| `sensors/IRBicycleWheelSpeedSensor` | Configurable 940 nm IR spoke sensor with optional CAN integration |
+
+Clone this repository together with all hardware subprojects:
+
+```bash
+git clone --recurse-submodules https://github.com/niklasdathe/BicycleOBU.git
+```
+
+Initialize them in an existing checkout:
+
+```bash
+git submodule update --init --recursive
+```
 
   
 ### Metabo CAS battery
