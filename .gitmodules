@@ -1,3 +1,6 @@
 [submodule "sensors/IRBicycleWheelSpeedSensor"]
 	path = sensors/IRBicycleWheelSpeedSensor
 	url = https://github.com/niklasdathe/IRBicycleWheelSpeedSensor.git
+[submodule "phone-app"]
+	path = phone-app
+	url = https://github.com/niklasdathe/PhoneOBU.git

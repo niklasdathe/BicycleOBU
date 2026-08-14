@@ -1,144 +1,82 @@
+# Bicycle OBU
 
-# iPhoneOBU
-For now this repository is just a collection of ideas/requirements I have for an IOS based OBU for bicycles.
+Bicycle-mounted research platform for cooperative transport, sensing and ride
+data acquisition. The system separates the rider interface, embedded hub,
+ITS-G5 radio and external sensors into independently versioned subprojects.
 
-## Components of complete System
-A list for components that would be cool in the complete system
-### iPhone 
-#### Software
-- The app will be the ui, and brains of the OBU
-- It communicates with ESP32S3 on mainboard through BLE
-- Data collection and logging with export capabilities. Maybe upload to a server.
-- Upload V2x messages to OpenTrafficMap
-  
-#### GUI
-- Shows a optimal speed range to reach next green traffic light if it recieved valid data
-- Warns if it detects an incoming collision
-- Info if it thinks tire pressure is low
-- Warning if its about to rain
-- Integration with apple maps or google maps if possible
-- Show surrounding vehicles like on an head up display
+This is a research prototype. Experimental safety functions are not certified
+and do not replace rider attention.
 
-### Mainboard / OBU
-#### Mechanical Mounting
-- Must be rigid
-- Attaches centrally to any bicycle handle bar
-- The iPhone must mount rigidly as it provides the GUI
-- Waterproof
-#### Electronics
-- Co-processor architecture or seperate boards for easier development and reusability
-- Must access CAN Bus
-- Must control battery charging and monitor + publish battery charge
-#### Software
-- ESP32C5
-  - Will be configured as a V2x radio that listens to incoming messages and routes them to the esp32s3 via SPI/I2C or puts them on the CAN-Bus
-  - Can transmit messages like alert messages with current location to other road units
-- ESP32S3
-  - Acts as the link between the iPhone and the onboard sensors/actors and communicates through BLE
+## Status
 
+| Area | Current evidence |
+|---|---|
+| Phone application | Flutter Android/iOS application, BLE client, C-ITS processing, navigation and recording implemented |
+| Wheel speed | IR through-beam sensor hardware, simulation and ESP-IDF firmware maintained as a submodule |
+| Main OBU | ESP32-S3 hub and ESP32-C5 ITS-G5 architecture under development |
+| System integration | Physical end-to-end validation pending |
 
-### IMU units
-#### Mechanical mounting 
-- Mounting should be simple and mountable to different bicycles
-- Mounting must be rigid and must not move
-- Waterproof
-#### Electronics
-- ESP32 for discovery communication and wireless communication
-#### Communication
-- Either BLE for easy positioning anywhere on bike or CAN
-#### Power
-- Either battery based for short term installation or on 5V system power bus for long term installation
+Do not treat source review or simulation as complete-system validation. Each
+subproject records its own implemented and pending verification evidence.
 
-  
-### Smart tail-/ headlights
-#### Mechanical mounting 
-- Should mount to standard headlight/taillight mounting spots
-- Waterproof
-#### Electronics
-- ESP32 for discovery communication and wireless communication
-#### Communication
-- CAN, as a 5VDC power wire must be routed anyway
-#### Power
-- On 5V system power bus for long term installation
-- Probably not feasible but might be worth investigating if power can be harvested from the spinning spoke magnet with a coil
+## Architecture
 
+```text
+Phone OBU
+   | Bluetooth Low Energy
+ESP32-S3 embedded hub
+   |-- ESP32-C5 ITS-G5 radio
+   |-- CAN-connected modules
+   `-- Local or BLE sensors
+```
 
-### Wheel speed sensors
-The implemented optical wheel-speed subsystem is maintained as the
-[`IRBicycleWheelSpeedSensor`](https://github.com/niklasdathe/IRBicycleWheelSpeedSensor)
-submodule. It contains the KiCad hardware, linked Python/ngspice simulation,
-ESP-IDF firmware, verification artifacts, JLCPCB production files, and an
-[interactive BOM](https://niklasdathe.github.io/IRBicycleWheelSpeedSensor/).
+The phone performs visualization, navigation, application-level C-ITS
+interpretation and ride recording. The ESP32-S3 provides the embedded data and
+control boundary. The ESP32-C5 is reserved for ITS-G5 radio processing.
 
-#### Mechanical mounting 
-- Mounting should be simple and mountable to different bicycles
-- Hall sensor on fork with magnet on spokes
-- Waterproof
-#### Electronics
-- ESP32 for discovery communication and wireless communication
-#### Communication
-- Either BLE for easy positioning anywhere on bike or CAN
-#### Power
-- Either battery based for short term installation or on 5V system power bus for long term installation
-- Probably not feasible but might be worth investigating if power can be harvested from the spinning spoke magnet with a coil
+## Subprojects
 
+| Path | Repository | Scope |
+|---|---|---|
+| [`phone-app`](phone-app/) | [PhoneOBU](https://github.com/niklasdathe/PhoneOBU) | Flutter rider interface, BLE client, navigation, C-ITS processing and ride data |
+| [`sensors/IRBicycleWheelSpeedSensor`](sensors/IRBicycleWheelSpeedSensor/) | [IRBicycleWheelSpeedSensor](https://github.com/niklasdathe/IRBicycleWheelSpeedSensor) | 940 nm spoke sensor, KiCad hardware, simulation and ESP-IDF firmware |
 
-## Hardware subprojects
-
-| Path | Purpose |
-| --- | --- |
-| `sensors/IRBicycleWheelSpeedSensor` | Configurable 940 nm IR spoke sensor with optional CAN integration |
-
-Clone this repository together with all hardware subprojects:
+Clone the complete system:
 
 ```bash
 git clone --recurse-submodules https://github.com/niklasdathe/BicycleOBU.git
 ```
 
-Initialize them in an existing checkout:
+Initialize subprojects in an existing checkout:
 
 ```bash
 git submodule update --init --recursive
 ```
 
-  
-### Metabo CAS battery
-#### Mechanical mounting
-- The battery should be mounted centrally on the frame
-- Must be mechanically locked to be save against vibration
-- Waterproof
-#### Charging circuitry
-- Charging with the onboard dynamo (6VAC @ 3W)
-- Requires:
-  -  variable 6VAC to 21VDC converter circuitry
-  -  Battery charging circuitry
-  -  Battery communication logic https://github.com/LukasGossmann/MetaboCAS
-#### Power supply
-- Power output needs to be converted from 18V down to 5V
-- Power consumption of complete onboard system is constrained by average charging energy achieved by this system
+## System constraints
 
-  
-## Idea/Question collection
-- If BLE bandwidth isn't enough for high bandwidth sensor communication or unreliable, IEEE 802.15.4 TSCH could be investigated
-- Could be fun to investigate if an IMU above the wheel can be used to estimate the tire pressure by looking at how dampened vertical oscillations are when driving over bumps
-- If we have location and V2x messages from infrastructure, we can give recommendations on travelling speed to reach green light
-- V2x data can be uploaded to OpenTrafficMap through roaming of iPhone
-- Sensors should be easily discovered, connected and configured. Probably best to build a xiao based modular sensor component that can be configured to be an imu, a wheel speed sensor or something else.
-- CAN controlled bicyle tire lock like on bike sharing bikes that can unlock via bus
-- What can i learn from the data:
-  - Can i reduce localization dependency of gnss or improve standstill acurracy with an ekf and the onboard sensors
-  - Can bicycle turning radius be estimated by IMU data?
-  - Can an IMU above the wheel  be used to estimate the tire pressure by looking at how dampened vertical oscillations are when driving over bumps
-  - Can a map be created with how bumpy stretches of road are compared to others to create a heatmap (maybe useful for infrastructure improvements)
-- Can roaming cost be reduced with LoRaWAN
-- Can the phone camera be used for object or road unit detection
-- What can legally be transmitted that would benefit the vru/cyclist
-- Are people willing to pay for a system like this/ willing to install it
-- Is CAN Bus the best candidate for a wire bicycle  bus. Is there a better protocoll with power over bus. Be existing cables can be reused.
-- How can a battery be charged while driving so that is doesnt have to be recharged manually.
-- How many sensors are needed to solve the kinematic model of a bicycle?
-- What are the different kinematic models of a bicycle.
-- Can localization be done completely without gnss?
-- What can be done form the infrastructure providers to improve safety of vrus using obus
-- What needs to be done in rural areas thats possible in citys
+- The phone-to-hub interface uses Bluetooth Low Energy.
+- The embedded architecture separates application/hub functions on the
+  ESP32-S3 from ITS-G5 radio functions on the ESP32-C5.
+- Wired bicycle modules are expected to use a shared 5 V supply and a
+  fault-tolerant vehicle bus; the final bus and connector system remain open.
+- Mechanical assemblies must withstand bicycle vibration and environmental
+  exposure; no enclosure or ingress-protection claim has been validated.
+- Raw acquisition time, arrival time and data provenance must remain distinct
+  across transport and storage boundaries.
 
+## Planned components
+
+| Component | Intended role | State |
+|---|---|---|
+| Main OBU | BLE gateway, vehicle bus, power and sensor coordination | Architecture defined; implementation pending |
+| ITS-G5 radio | Receive and transmit cooperative transport messages | Architecture defined; implementation pending |
+| IMU modules | Distributed bicycle motion measurements | Investigation |
+| Smart lighting | Vehicle-bus-controlled head and tail lighting | Investigation |
+| Energy system | Dynamo input, battery charging and regulated system power | Investigation |
+
+## License
+
+No project license has been selected. Until one is added, this repository and
+its subprojects must not be presented as granting hardware, software or
+documentation reuse rights.
