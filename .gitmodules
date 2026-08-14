@@ -4,3 +4,6 @@
 [submodule "phone-app"]
 	path = phone-app
 	url = https://github.com/niklasdathe/PhoneOBU.git
+[submodule "mainboard-protoype"]
+	path = mainboard-protoype
+	url = https://github.com/niklasdathe/MainboardOBU-prototype.git
